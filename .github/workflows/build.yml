@@ -10,18 +10,30 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-      - name: Скачивание кода из репозитория
+      - name: Скачивание кода
         uses: actions/checkout@v4
 
-      - name: Сборка APK с помощью Buildozer
-        uses: ArtemSBulgakov/buildozer-action@v1
-        id: buildozer
+      - name: Настройка Python
+        uses: actions/setup-python@v5
         with:
-          command: buildozer android debug
-          buildozer_version: master
+          python-version: '3.10'
 
-      - name: Загрузка готового APK в артефакты
+      - name: Установка системных зависимостей
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential git zip unzip openjdk-17-jdk autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev automake
+
+      - name: Установка Buildozer и Cython
+        run: |
+          pip install --upgrade pip
+          pip install buildozer cython==0.29.36
+
+      - name: Сборка APK
+        run: |
+          yes | buildozer android debug
+
+      - name: Загрузка APK в артефакты
         uses: actions/upload-artifact@v4
         with:
           name: TeaTime-APK
-          path: ${{ steps.buildozer.outputs.filename }}
+          path: bin/*.apk
