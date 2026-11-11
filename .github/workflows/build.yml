@@ -35,8 +35,10 @@ jobs:
           pip install buildozer cython==0.29.36
 
       - name: Сборка APK
+        env:
+          BUILDOZER_WARN_ON_ROOT: 0
         run: |
-          yes | buildozer android debug
+          buildozer -v android debug
 
       - name: Загрузка APK в артефакты
         uses: actions/upload-artifact@v4
