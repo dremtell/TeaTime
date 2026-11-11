@@ -1,0 +1,51 @@
+language: python
+python:
+  - "3.9"
+
+# Используем Ubuntu (Linux), так как Android SDK/NDK стабильнее всего работают там
+os: linux
+dist: jammy
+
+# Устанавливаем системные зависимости, необходимые для работы Buildozer и компиляции под Android
+addons:
+  apt:
+    update: true
+    packages:
+      - build-essential
+      - git
+      - zip
+      - unzip
+      - openjdk-17-jdk
+      - autoconf
+      - libtool
+      - pkg-config
+      - zlib1g-dev
+      - libncurses5-dev
+      - libncursesw5-dev
+      - libtinfo5
+      - cmake
+      - libffi-dev
+      - libssl-dev
+
+# Кешируем директорию .buildozer, чтобы последующие сборки шли в 5-10 раз быстрее
+cache:
+  directories:
+    - $HOME/.buildozer
+
+install:
+  - pip install --upgrade pip
+  - pip install buildozer cython
+
+script:
+  # Автоматически принимаем лицензии Android SDK и запускаем сборку debug-версии APK
+  - yes | buildozer android debug
+
+# Где искать готовый файл после успешной сборки (его можно загрузить в GitHub Releases)
+deploy:
+  provider: releases
+  api_key: "$GITHUB_TOKEN" # Токен нужно добавить в настройки репозитория в Travis CI
+  file_glob: true
+  file: bin/*.apk
+  skip_cleanup: true
+  on:
+    tags: true # Деплой сработает только при создании нового тега/релиза в Git
