@@ -1,51 +1,45 @@
-language: python
-python:
-  - "3.9"
+name: Build APK
 
-# Используем Ubuntu (Linux), так как Android SDK/NDK стабильнее всего работают там
-os: linux
-dist: jammy
+on:
+  push:
+    branches: [ master, main ]
+  workflow_dispatch:
 
-# Устанавливаем системные зависимости, необходимые для работы Buildozer и компиляции под Android
-addons:
-  apt:
-    update: true
-    packages:
-      - build-essential
-      - git
-      - zip
-      - unzip
-      - openjdk-17-jdk
-      - autoconf
-      - libtool
-      - pkg-config
-      - zlib1g-dev
-      - libncurses5-dev
-      - libncursesw5-dev
-      - libtinfo5
-      - cmake
-      - libffi-dev
-      - libssl-dev
+jobs:
+  build:
+    runs-on: ubuntu-22.04
 
-# Кешируем директорию .buildozer, чтобы последующие сборки шли в 5-10 раз быстрее
-cache:
-  directories:
-    - $HOME/.buildozer
+    steps:
+      - name: Скачивание кода
+        uses: actions/checkout@v4
 
-install:
-  - pip install --upgrade pip
-  - pip install buildozer cython
+      - name: Настройка Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
 
-script:
-  # Автоматически принимаем лицензии Android SDK и запускаем сборку debug-версии APK
-  - yes | buildozer android debug
+      - name: Кеширование файлов Buildozer
+        uses: actions/cache@v4
+        with:
+          path: .buildozer
+          key: ${{ runner.os }}-buildozer-${{ hashFiles('buildozer.spec') }}
 
-# Где искать готовый файл после успешной сборки (его можно загрузить в GitHub Releases)
-deploy:
-  provider: releases
-  api_key: "$GITHUB_TOKEN" # Токен нужно добавить в настройки репозитория в Travis CI
-  file_glob: true
-  file: bin/*.apk
-  skip_cleanup: true
-  on:
-    tags: true # Деплой сработает только при создании нового тега/релиза в Git
+      - name: Установка системных зависимостей
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential git zip unzip openjdk-17-jdk autoconf libtool pkg-config zlib1g-dev libncurses5-dev libncursesw5-dev libtinfo5 cmake libffi-dev libssl-dev automake
+
+      - name: Установка Buildozer и Cython
+        run: |
+          pip install --upgrade pip
+          pip install buildozer cython==0.29.36
+
+      - name: Сборка APK
+        run: |
+          yes | buildozer android debug
+
+      - name: Загрузка APK в артефакты
+        uses: actions/upload-artifact@v4
+        with:
+          name: TeaTime-APK
+          path: bin/*.apk
