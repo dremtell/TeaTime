@@ -1,0 +1,27 @@
+name: Build APK
+
+on:
+  push:
+    branches: [ master, main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - name: Скачивание кода из репозитория
+        uses: actions/checkout@v4
+
+      - name: Сборка APK с помощью Buildozer
+        uses: ArtemSBulgakov/buildozer-action@v1
+        id: buildozer
+        with:
+          command: buildozer android debug
+          buildozer_version: master
+
+      - name: Загрузка готового APK в артефакты
+        uses: actions/upload-artifact@v4
+        with:
+          name: TeaTime-APK
+          path: ${{ steps.buildozer.outputs.filename }}
