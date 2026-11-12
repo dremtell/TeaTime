@@ -21,6 +21,7 @@ jobs:
           BUILDOZER_WARN_ON_ROOT: 0
         run: |
           git config --global --add safe.directory '*'
+          /home/user/.venv/bin/pip install "cython<3.0"
           set -o pipefail
           yes | buildozer -v android debug 2>&1 | tee build.log
 
@@ -28,7 +29,7 @@ jobs:
         if: failure()
         run: |
           echo "=== ТОЧНАЯ ПРИЧИНА ОШИБКИ ==="
-          grep -B 25 -A 5 "Command failed" build.log | tail -n 60 || tail -n 120 build.log
+          tail -n 80 build.log
 
       - name: Загрузка APK в артефакты
         uses: actions/upload-artifact@v4
