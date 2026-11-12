@@ -10,16 +10,25 @@ jobs:
     runs-on: ubuntu-22.04
     container:
       image: kivy/buildozer:latest
+      options: --user root
 
     steps:
       - name: Скачивание кода
         uses: actions/checkout@v4
 
-      - name: Сборка APK
+      - name: Исправление прав доступа и сборка APK
         env:
           BUILDOZER_WARN_ON_ROOT: 0
         run: |
-          yes | buildozer -v android debug
+          git config --global --add safe.directory '*'
+          set -o pipefail
+          yes | buildozer -v android debug 2>&1 | tee build.log
+
+      - name: Показать причину ошибки (если сборка упала)
+        if: failure()
+        run: |
+          echo "=== ПОСЛЕДНИЕ 50 СТРОК ЛОГА ==="
+          tail -n 50 build.log
 
       - name: Загрузка APK в артефакты
         uses: actions/upload-artifact@v4
