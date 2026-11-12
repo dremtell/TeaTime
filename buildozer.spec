@@ -9,10 +9,10 @@
 title = My Application
 
 # (str) Package name
-package.name = TeaTime
+package.name = teatime
 
 # (str) Package domain (needed for android/ios packaging)
-package.domain = org.test
+package.domain = org.dremtell
 
 # (str) Source code where the main.py live
 source.dir = .
@@ -27,7 +27,7 @@ source.include_exts = py,png,jpg,kv,atlas,mp3
 #source.exclude_exts = spec
 
 # (list) List of directory to exclude (leave empty to not exclude anything)
-#source.exclude_dirs = tests, bin, venv
+source.exclude_dirs = tests, bin, venv, .git, .github, .buildozer
 
 # (list) List of exclusions using pattern matching
 # Do not prefix with './'
