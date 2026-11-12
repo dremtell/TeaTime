@@ -27,8 +27,8 @@ jobs:
       - name: Показать причину ошибки (если сборка упала)
         if: failure()
         run: |
-          echo "=== ПОСЛЕДНИЕ 50 СТРОК ЛОГА ==="
-          tail -n 50 build.log
+          echo "=== ТОЧНАЯ ПРИЧИНА ОШИБКИ ==="
+          grep -B 25 -A 5 "Command failed" build.log | tail -n 60 || tail -n 120 build.log
 
       - name: Загрузка APK в артефакты
         uses: actions/upload-artifact@v4
