@@ -30,3 +30,10 @@ jobs:
           name: TeaTime-APK
           path: bin/*.apk
           if-no-files-found: error
+      - name: Публикация APK в GitHub Releases
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest-apk
+          name: Последняя сборка TeaTime APK
+          files: bin/*.apk
+
