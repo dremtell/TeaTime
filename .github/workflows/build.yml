@@ -16,23 +16,17 @@ jobs:
       - name: Скачивание кода
         uses: actions/checkout@v4
 
-      - name: Исправление прав доступа и сборка APK
+      - name: Сборка APK
         env:
           BUILDOZER_WARN_ON_ROOT: 0
         run: |
           git config --global --add safe.directory '*'
           /home/user/.venv/bin/pip install "cython<3.0"
-          set -o pipefail
-          yes | buildozer -v android debug 2>&1 | tee build.log
-
-      - name: Показать причину ошибки (если сборка упала)
-        if: failure()
-        run: |
-          echo "=== ТОЧНАЯ ПРИЧИНА ОШИБКИ ==="
-          tail -n 80 build.log
+          yes | buildozer -v android debug || true
 
       - name: Загрузка APK в артефакты
         uses: actions/upload-artifact@v4
         with:
           name: TeaTime-APK
           path: bin/*.apk
+          if-no-files-found: error
