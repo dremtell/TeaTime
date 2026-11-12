@@ -8,6 +8,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-22.04
+    timeout-minutes: 40
 
     steps:
       - name: Скачивание кода
@@ -38,7 +39,7 @@ jobs:
         env:
           BUILDOZER_WARN_ON_ROOT: 0
         run: |
-          buildozer -v android debug
+          yes | buildozer -v android debug
 
       - name: Загрузка APK в артефакты
         uses: actions/upload-artifact@v4
