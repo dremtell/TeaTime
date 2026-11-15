@@ -19,6 +19,13 @@ jobs:
       - name: Скачивание кода
         uses: actions/checkout@v4
 
+      - name: Чтение версии из buildozer.spec
+        id: ver
+        run: |
+          APP_VER=$(grep "^version" buildozer.spec | head -n 1 | cut -d'=' -f2 | tr -d ' \r')
+          echo "tag=v${APP_VER}" >> $GITHUB_OUTPUT
+          echo "title=v${APP_VER} + APK" >> $GITHUB_OUTPUT
+
       - name: Сборка APK
         env:
           BUILDOZER_WARN_ON_ROOT: 0
@@ -30,13 +37,13 @@ jobs:
       - name: Загрузка APK в артефакты
         uses: actions/upload-artifact@v4
         with:
-          name: TeaTime-APK
+          name: TeaTime-APK-${{ steps.ver.outputs.tag }}
           path: bin/*.apk
           if-no-files-found: error
 
-      - name: Публикация APK в GitHub Releases
+      - name: Публикация нового релиза APK
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: latest-apk
-          name: Последняя сборка TeaTime APK
+          tag_name: ${{ steps.ver.outputs.tag }}
+          name: ${{ steps.ver.outputs.title }}
           files: bin/*.apk
