@@ -12,17 +12,40 @@ from kivy.core.window import Window
 from kivy.metrics import cm
 from kivy.graphics import Color, RoundedRectangle
 
-# Нативная интеграция вибрации для Android (pyjnius)
-try:
-    from jnius import autoclass
+from kivy.utils import platform
+from kivy.logger import Logger
 
-    PythonActivity = autoclass('org.renpy.android.PythonActivity')
-    activity = PythonActivity.mActivity
-    Context = autoclass('android.content.Context')
-    vibrator_service = activity.getSystemService(Context.VIBRATOR_SERVICE)
-    HAS_NATIVE_VIBRATOR = True
-except Exception:
-    HAS_NATIVE_VIBRATOR = False
+# Рисунок вибрации (мс): пауза, импульс, пауза, импульс, пауза, импульс
+VIBRATION_PATTERN = [0, 250, 120, 250, 120, 500]
+
+def vibrate(pattern=VIBRATION_PATTERN):
+    """Ритмичная вибрация на Android. На других платформах ничего не делает."""
+    if platform != 'android':
+        return
+    try:
+        from jnius import autoclass
+        PythonActivity = autoclass('org.kivy.android.PythonActivity')
+        Context = autoclass('android.content.Context')
+        Version = autoclass('android.os.Build$VERSION')
+
+        activity = PythonActivity.mActivity
+        vibrator = activity.getSystemService(Context.VIBRATOR_SERVICE)
+        if not vibrator or not vibrator.hasVibrator():
+            return
+
+        if Version.SDK_INT >= 26:
+            VibrationEffect = autoclass('android.os.VibrationEffect')
+            # -1 = не повторять
+            vibrator.vibrate(VibrationEffect.createWaveform(pattern, -1))
+        else:
+            vibrator.vibrate(pattern, -1)
+    except Exception as e:
+        Logger.warning(f"TeaTime: vibration failed: {e}")
+        # запасной вариант: один длинный сигнал
+        try:
+            vibrator.vibrate(600)
+        except Exception:
+            pass
 
 kivy.require('2.0.0')
 
@@ -305,12 +328,8 @@ class TeaTimerWidget(BoxLayout):
         if self.end_sound:
             self.end_sound.play()
 
-        # 2. Нативная вибрация на 0.5 секунду
-        if HAS_NATIVE_VIBRATOR:
-            try:
-                vibrator_service.vibrate(500)
-            except Exception:
-                pass
+        # 2. Вибрация
+        vibrate()
 
         Clock.schedule_once(self.reset_image_and_bg, 10)
 
