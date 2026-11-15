@@ -15,8 +15,8 @@ from kivy.graphics import Color, RoundedRectangle
 from kivy.utils import platform
 from kivy.logger import Logger
 
-# Рисунок вибрации (мс): пауза, импульс, пауза, импульс, пауза, импульс
-VIBRATION_PATTERN = [0, 250, 120, 250, 120, 500]
+# Рисунок вибрации (мс): пауза, импульс, пауза, импульс
+VIBRATION_PATTERN = [0, 250, 100, 250]
 
 def vibrate(pattern=VIBRATION_PATTERN):
     """Ритмичная вибрация на Android. На других платформах ничего не делает."""
